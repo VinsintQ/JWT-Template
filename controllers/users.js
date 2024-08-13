@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 
 const bcrypt = require("bcrypt");
+//models
 const User = require("../models/user");
-const salt = 12;
+
 //Routes
 
 router.post("/signup", async (req, res) => {
@@ -21,9 +23,33 @@ router.post("/signup", async (req, res) => {
         parseInt(process.env.SALT)
       ),
     });
-    res.status(201).json({ user });
+    const token = jwt.sign(
+      { username: user.username, _id: user._id },
+      process.env.JWT_SECRET
+    );
+    res.status(201).json({ user, token });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
+
+// other routes here
+
+router.post("/signin", async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.body.username });
+    if (user && bcrypt.compareSync(req.body.password, user.hashedPassword)) {
+      const token = jwt.sign(
+        { username: user.username, _id: user._id },
+        process.env.JWT_SECRET
+      );
+      res.status(200).json({ token });
+    } else {
+      res.status(401).json({ error: "Invalid username or password." });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 module.exports = router;

@@ -1,5 +1,8 @@
 const dotenv = require("dotenv");
 dotenv.config();
+// at the top, with other imports
+const profilesRouter = require("./controllers/profiles");
+
 require("./config/database.js");
 const morgan = require("morgan");
 const express = require("express");
@@ -13,6 +16,7 @@ app.use(express.json());
 // Routes
 app.use("/test-jwt", testJWTRouter);
 app.use("/users", usersRouter);
+app.use("/profiles", profilesRouter);
 app.listen(PORT, () => {
   console.log("The express app is ready!");
 });
